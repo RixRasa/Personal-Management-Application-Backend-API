@@ -12,7 +12,7 @@ using TransactionsAPI.Database;
 namespace TransactionsAPI.Migrations
 {
     [DbContext(typeof(TransDbContext))]
-    [Migration("20230719012252_InitDb")]
+    [Migration("20230719015900_InitDb")]
     partial class InitDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,11 +53,8 @@ namespace TransactionsAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("CategoryCode")
+                    b.Property<string>("CategoryId")
                         .HasColumnType("text");
-
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Currency")
                         .IsRequired()
@@ -84,7 +81,7 @@ namespace TransactionsAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryCode");
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("transactions", (string)null);
                 });
@@ -93,7 +90,7 @@ namespace TransactionsAPI.Migrations
                 {
                     b.HasOne("TransactionsAPI.Database.Entities.CategoryEntity", "Category")
                         .WithMany()
-                        .HasForeignKey("CategoryCode");
+                        .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
                 });

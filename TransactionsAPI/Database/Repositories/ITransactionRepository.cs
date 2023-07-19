@@ -18,6 +18,9 @@ namespace TransactionsAPI.Database.Repositories {
         //OVO OVDE JE ZA B1 USLOV*********************************************************************************************
         Task<TransactionEntity> GetTransactionById(string Id);
         Task<bool> CreateProduct(TransactionEntity transactionEntity);
-        
+
+
+        //OVO OVDE JE ZA B4 USLOV**********************************************************************************************
+        Task<bool> CategorizeTransaction(string id, string idCategory);
     }
 }

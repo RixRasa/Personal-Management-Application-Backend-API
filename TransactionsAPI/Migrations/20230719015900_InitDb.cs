@@ -35,23 +35,22 @@ namespace TransactionsAPI.Migrations
                     Currency = table.Column<string>(type: "text", nullable: false),
                     Mcc = table.Column<string>(type: "text", nullable: false),
                     Kind = table.Column<string>(type: "text", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: true),
-                    CategoryCode = table.Column<string>(type: "text", nullable: true)
+                    CategoryId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_transactions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_transactions_categories_CategoryCode",
-                        column: x => x.CategoryCode,
+                        name: "FK_transactions_categories_CategoryId",
+                        column: x => x.CategoryId,
                         principalTable: "categories",
                         principalColumn: "Code");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_transactions_CategoryCode",
+                name: "IX_transactions_CategoryId",
                 table: "transactions",
-                column: "CategoryCode");
+                column: "CategoryId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

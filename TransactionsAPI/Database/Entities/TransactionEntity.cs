@@ -27,7 +27,7 @@ namespace TransactionsAPI.Database.Entities {
         public string Currency { get; set; } //OVO MOZE DA BUDE ENUM
         public string Mcc { get; set; }
         public TransactionKind Kind { get; set; }
-        public int? CategoryId { get; set; }
+        public string? CategoryId { get; set; }
         public CategoryEntity? Category { get; set; }
        
     }

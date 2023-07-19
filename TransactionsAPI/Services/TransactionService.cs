@@ -17,8 +17,8 @@ namespace TransactionsAPI.Services {
 
         //OVDE JE DEO ZA B3 USLOV**************************************************************************************************
         public async Task<bool> InsertCategory(Category c) {
-            var categoryExist = await CheckIfCategoryExist(c.Code);
-            if (categoryExist != null) {
+            var checkIfCategoryExist = await CheckIfCategoryExist(c.Code);
+            if (checkIfCategoryExist) {
                 return await _repository.UpdateCategory(c.Code, c);
             }
             else {
@@ -26,9 +26,10 @@ namespace TransactionsAPI.Services {
             }
         }
 
-        private async Task<CategoryEntity> CheckIfCategoryExist(string code) {
+        private async Task<bool> CheckIfCategoryExist(string code) {
             var category = await _repository.GetCategoryByCodeId(code);
-            return category;
+            if (category == null) return false;
+            else return true;
         }
 
 
@@ -50,12 +51,22 @@ namespace TransactionsAPI.Services {
         }
 
         private async Task<bool> CheckIfTransactionExist(string Id) {
-            var product = await _repository.GetTransactionById(Id);
-            if (product == null) return false;
+            var transaction = await _repository.GetTransactionById(Id);
+            if (transaction == null) return false;
             else return true;
 
         }
 
-       
+
+        //OVO JE DEO ZA B4 USLOV*******************************************************************************************************
+        public async Task<bool> CategorizeTransaction(string id, string idCategory) {
+            var transaction = await _repository.GetTransactionById(id);
+            var category = await _repository.GetCategoryByCodeId(idCategory);
+            if(transaction == null || category == null) return false;
+            else {
+                return await _repository.CategorizeTransaction(id, idCategory);
+            }
+            
+        }
     }
 }

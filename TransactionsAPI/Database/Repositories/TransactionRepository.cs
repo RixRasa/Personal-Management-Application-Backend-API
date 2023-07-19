@@ -12,6 +12,17 @@ namespace TransactionsAPI.Database.Repositories {
             _dbContext = dbContext;
         }
 
+        //OVO OVDE JE ZA B4 USLOV******************************************************************************************
+        public async Task<bool> CategorizeTransaction(string id, string idCategory) {
+            var category = await _dbContext.Categories.SingleAsync(x => x.Code.Equals(idCategory));
+            var transaction = await _dbContext.Transactions.SingleAsync(x => x.Id.Equals(id));
+
+            transaction.Category = category;
+            transaction.CategoryId = category.Code;
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
 
         //OVO OVDE JE ZA B3 USLOV*******************************************************************************************
         public async Task<CategoryEntity> GetCategoryByCodeId(string codeId) {

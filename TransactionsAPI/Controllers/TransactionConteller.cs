@@ -129,6 +129,12 @@ namespace TransactionsAPI.Controllers {
         }
 
 
+        [HttpPost("transactions/{id}/categorize")]
+        public async Task<IActionResult> GiveCategoryToTransaction([FromRoute] string id, [FromBody] string catcode) {
+            var categorised = await _transactionService.CategorizeTransaction(id, catcode);
+            if (categorised == null) return BadRequest("Category or Transaction You picked doesnt exist");
+            else return Ok("Categorisation completed"); 
+        }
 
 
 
