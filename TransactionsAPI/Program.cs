@@ -20,7 +20,7 @@ builder.Services.AddControllers().AddJsonOptions(options => {
         new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase)
         );
     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-});
+}); 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

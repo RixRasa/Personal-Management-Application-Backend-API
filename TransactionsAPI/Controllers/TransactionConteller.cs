@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TransactionsAPI.Models;
 using TransactionsAPI.Services;
+using TransactionsAPI.Commands;
 
 namespace TransactionsAPI.Controllers {
     [ApiController]
@@ -18,8 +19,10 @@ namespace TransactionsAPI.Controllers {
 
         //METHOD CONNECTED TO RETRIEVING DATA OF TRANSACTIONS **********************************************************************************************
         [HttpGet("transactions")]
-        public async Task<IActionResult> GetTransactions([FromQuery] TransactionKind? transaction_kind = null, [FromQuery] DateTime? start_date = null, [FromQuery] DateTime? end_date = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] SortOrder sortOrder = SortOrder.Asc, [FromQuery] string? sortBy = null) {
-            var transactions = await _transactionService.GetTransactions(transaction_kind, start_date, end_date, page, pageSize, sortOrder, sortBy);
+        public async Task<IActionResult> GetTransactions([FromQuery] string? transaction_kind = null, [FromQuery] DateTime? start_date = null, [FromQuery] DateTime? end_date = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] SortOrder sortOrder = SortOrder.Asc, [FromQuery] string? sortBy = null) {
+            TransactionKind tKind;
+            Enum.TryParse<TransactionKind>(transaction_kind, out tKind);
+            var transactions = await _transactionService.GetTransactions(tKind, start_date, end_date, page, pageSize, sortOrder, sortBy);
             return Ok(transactions);
         }
 
@@ -41,11 +44,7 @@ namespace TransactionsAPI.Controllers {
                             string Benef_name = cells[1];
 
                             string[] date_parts = cells[2].Split('/');
-
-                            DateTime date = new DateTime();
-                            date.AddMonths(int.Parse(date_parts[0]));
-                            date.AddDays(int.Parse(date_parts[1]));
-                            date.AddYears(int.Parse(date_parts[2]));
+                            DateTime date = new DateTime(int.Parse(date_parts[2]), int.Parse(date_parts[0]), int.Parse(date_parts[1]));
 
                             DirectionKind directions;
                             Enum.TryParse<DirectionKind>(cells[3], out directions);
@@ -129,13 +128,20 @@ namespace TransactionsAPI.Controllers {
         }
 
 
+        //METHOD CONNECTED TO CATEGORIZING TRANSACTIONS*******************************************************************************************************
         [HttpPost("transactions/{id}/categorize")]
-        public async Task<IActionResult> GiveCategoryToTransaction([FromRoute] string id, [FromBody] string catcode) {
-            var categorised = await _transactionService.CategorizeTransaction(id, catcode);
+        public async Task<IActionResult> GiveCategoryToTransaction([FromRoute] string id, [FromBody] CategorizeTransactionCommand command) {
+            var categorised = await _transactionService.CategorizeTransaction(id, command.catcode);
             if (categorised == null) return BadRequest("Category or Transaction You picked doesnt exist");
             else return Ok("Categorisation completed"); 
         }
 
+
+        
+        [HttpGet("spending-analytics")]
+        public async Task<IActionResult> GetSpendingAnalytics([FromQuery] string code) {
+            return Ok();
+        }
 
 
     }

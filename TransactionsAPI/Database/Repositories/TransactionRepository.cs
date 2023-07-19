@@ -60,13 +60,14 @@ namespace TransactionsAPI.Database.Repositories {
             var query = _dbContext.Transactions.AsQueryable();
 
             if (transaction_kind != null) {
-                query.Where(x => x.Kind.Equals(transaction_kind));
+                query = query.Where(x => x.Kind == transaction_kind);
             }
+            
             if (start_date != null) {
-                query.Where(x => (DateTime.Compare(x.Date, (DateTime)start_date) == 0 || DateTime.Compare(x.Date, (DateTime)start_date) == 1));
+                query = query.Where(x => x.Date >= start_date);
             }
             if (end_date != null) {
-                query.Where(x => (DateTime.Compare(x.Date, (DateTime)end_date) == 0 || DateTime.Compare(x.Date, (DateTime)end_date) == -1));
+                query = query.Where(x => x.Date <= end_date);
             }
 
             var totalCount = query.Count();
