@@ -39,6 +39,32 @@ namespace TransactionsAPI.Migrations
                     b.ToTable("categories", (string)null);
                 });
 
+            modelBuilder.Entity("TransactionsAPI.Database.Entities.SplitTransactionEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("TransactionId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("amount")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("catcode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TransactionId");
+
+                    b.ToTable("splitsOfTransaction", (string)null);
+                });
+
             modelBuilder.Entity("TransactionsAPI.Database.Entities.TransactionEntity", b =>
                 {
                     b.Property<string>("Id")
@@ -84,6 +110,17 @@ namespace TransactionsAPI.Migrations
                     b.ToTable("transactions", (string)null);
                 });
 
+            modelBuilder.Entity("TransactionsAPI.Database.Entities.SplitTransactionEntity", b =>
+                {
+                    b.HasOne("TransactionsAPI.Database.Entities.TransactionEntity", "Transaction")
+                        .WithMany("SplitTransactions")
+                        .HasForeignKey("TransactionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Transaction");
+                });
+
             modelBuilder.Entity("TransactionsAPI.Database.Entities.TransactionEntity", b =>
                 {
                     b.HasOne("TransactionsAPI.Database.Entities.CategoryEntity", "Category")
@@ -91,6 +128,11 @@ namespace TransactionsAPI.Migrations
                         .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("TransactionsAPI.Database.Entities.TransactionEntity", b =>
+                {
+                    b.Navigation("SplitTransactions");
                 });
 #pragma warning restore 612, 618
         }

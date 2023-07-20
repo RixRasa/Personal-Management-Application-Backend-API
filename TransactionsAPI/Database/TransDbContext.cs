@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 using TransactionsAPI.Database.Configurations;
 using TransactionsAPI.Database.Entities;
 
@@ -7,6 +8,8 @@ namespace TransactionsAPI.Database {
 
         public DbSet<TransactionEntity> Transactions { get; set; }
         public DbSet<CategoryEntity> Categories{ get; set; }
+
+        public DbSet<SplitTransactionEntity> SplitsOfTransaction { get; set; }
 
         public TransDbContext(DbContextOptions options): base(options) { 
         }
@@ -41,6 +44,17 @@ namespace TransactionsAPI.Database {
                 builder.Property(x => x.Code).IsRequired();
                 builder.Property(x => x.Parent_code);
                 builder.Property(x => x.Name);
+            });
+
+            modelBuilder.Entity<SplitTransactionEntity>(builder => {
+                builder.ToTable("splitsOfTransaction");
+                builder.HasKey(x => x.Id);
+
+                builder.Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
+                builder.Property(x => x.catcode);
+                builder.Property(x => x.amount);
+                
+
             });
             
             //base.OnModelCreating(modelBuilder);

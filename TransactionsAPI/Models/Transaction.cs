@@ -15,6 +15,7 @@
             Currency = _currency;
             Mcc = _mcc;
             Kind = _kind;
+            SplitTransactions = new List<SplitTransaction>();
         }
 
         public string Id { get; set; }
@@ -28,6 +29,7 @@
         public TransactionKind Kind { get; set; }
         public string? CategoryId { get; set; }
         public Category? Category { get; set; } 
+        public ICollection<SplitTransaction> SplitTransactions { get; set; }
 
 
     }

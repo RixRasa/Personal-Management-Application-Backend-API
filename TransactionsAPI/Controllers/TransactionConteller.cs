@@ -17,12 +17,24 @@ namespace TransactionsAPI.Controllers {
         }
 
 
+        //IMPLEMENTIRAJ DA BUDE LISTA KINDOVA BRE
         //METHOD CONNECTED TO RETRIEVING DATA OF TRANSACTIONS **********************************************************************************************
         [HttpGet("transactions")]
-        public async Task<IActionResult> GetTransactions([FromQuery] string? transaction_kind = null, [FromQuery] DateTime? start_date = null, [FromQuery] DateTime? end_date = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] SortOrder sortOrder = SortOrder.Asc, [FromQuery] string? sortBy = null) {
-            TransactionKind tKind;
-            Enum.TryParse<TransactionKind>(transaction_kind, out tKind);
-            var transactions = await _transactionService.GetTransactions(tKind, start_date, end_date, page, pageSize, sortOrder, sortBy);
+        public async Task<IActionResult> GetTransactions([FromQuery] string? transactionKind = null, [FromQuery] DateTime? start_date = null, [FromQuery] DateTime? end_date = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] SortOrder sortOrder = SortOrder.Asc, [FromQuery] string? sortBy = null) {
+
+            List<TransactionKind> listOfKinds = new List<TransactionKind>();
+            if(transactionKind != null) {
+                string[] transactionKinds = transactionKind.Split(',');
+                foreach(string s in transactionKinds) {
+                    TransactionKind tKind =  new TransactionKind();
+                    Enum.TryParse<TransactionKind>(s, out tKind);
+                    listOfKinds.Add(tKind);
+                }
+            }
+            
+            
+            
+            var transactions = await _transactionService.GetTransactions(listOfKinds, start_date, end_date, page, pageSize, sortOrder, sortBy);
             return Ok(transactions);
         }
 
@@ -137,12 +149,21 @@ namespace TransactionsAPI.Controllers {
         }
 
 
-        
+        //METHOD CONNECTED TO ANALYZING SPENDINGS *************************************************************************************************************
         [HttpGet("spending-analytics")]
-        public async Task<IActionResult> GetSpendingAnalytics([FromQuery] string code) {
-            return Ok();
+        public async Task<IActionResult> GetSpendingAnalytics([FromQuery] string? catcode = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null, [FromQuery] DirectionKind? directionKind = null) {
+            List<SpendingByCategory> list = await _transactionService.GetAnaliytics(catcode, startDate, endDate, directionKind);
+            return Ok(list);
         }
 
+
+        //METHOD CONNECTED TO SPLITING A TRANSACTION IN SMALLER TRANSACTIONS***********************************************************************************
+        [HttpPost("transactions/{id}/split")]
+        public async Task<IActionResult> SplitTransaction([FromBody] SplitTransactionCommand splits, [FromRoute] string id) {
+            var splited = await _transactionService.SplitTransaction(splits.Splits, id);
+            if (splited == false) return BadRequest("Could not be splited");
+            return Ok();
+        }
 
     }
 }

@@ -1,4 +1,5 @@
-﻿using TransactionsAPI.Database.Entities;
+﻿using TransactionsAPI.Commands;
+using TransactionsAPI.Database.Entities;
 using TransactionsAPI.Models;
 
 namespace TransactionsAPI.Database.Repositories {
@@ -12,7 +13,7 @@ namespace TransactionsAPI.Database.Repositories {
 
 
         //OVO OVDE JE ZA B2 USLOV********************************************************************************************
-        Task<PageSortedList<TransactionEntity>> GetTransactions(TransactionKind? transaction_kind, DateTime? start_date, DateTime? end_date, int page = 1, int pageSize = 10, SortOrder sortOrder = SortOrder.Asc, string? sortBy = null);
+        Task<PageSortedList<TransactionEntity>> GetTransactions(List<TransactionKind>? listOfKinds, DateTime? start_date, DateTime? end_date, int page = 1, int pageSize = 10, SortOrder sortOrder = SortOrder.Asc, string? sortBy = null);
 
 
         //OVO OVDE JE ZA B1 USLOV*********************************************************************************************
@@ -22,5 +23,15 @@ namespace TransactionsAPI.Database.Repositories {
 
         //OVO OVDE JE ZA B4 USLOV**********************************************************************************************
         Task<bool> CategorizeTransaction(string id, string idCategory);
+
+
+        //OVO OVDE JE ZA B5 USLOV**********************************************************************************************
+        Task<List<SpendingByCategory>> GetAnalytics(string? catcode, DateTime? startDate, DateTime? endDate, DirectionKind? directionKind);
+
+
+        //OVO OVDE JE ZA B6 USLOV**********************************************************************************************
+        Task<bool> SplitTheTransaction(TransactionEntity transaction, Splits[] splits);
+
+
     }
 }

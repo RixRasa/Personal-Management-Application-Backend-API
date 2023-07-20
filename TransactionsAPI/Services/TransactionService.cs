@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using TransactionsAPI.Commands;
 using TransactionsAPI.Database.Entities;
 using TransactionsAPI.Database.Repositories;
 using TransactionsAPI.Models;
@@ -34,8 +35,8 @@ namespace TransactionsAPI.Services {
 
 
         //OVDE JE DEO ZA B2 USLOV**************************************************************************************************
-        public async Task<PageSortedList<Transaction>> GetTransactions(TransactionKind? transaction_kind, DateTime? start_date, DateTime? end_date, int page, int pageSize, SortOrder sortOrder, string? sortBy) {
-            var transactions = await _repository.GetTransactions(transaction_kind, start_date, end_date, page, pageSize, sortOrder, sortBy);
+        public async Task<PageSortedList<Transaction>> GetTransactions(List<TransactionKind>? listOfKinds, DateTime? start_date, DateTime? end_date, int page, int pageSize, SortOrder sortOrder, string? sortBy) {
+            var transactions = await _repository.GetTransactions(listOfKinds, start_date, end_date, page, pageSize, sortOrder, sortBy);
             return _mapper.Map<PageSortedList<Transaction>>(transactions);
         }
 
@@ -67,6 +68,35 @@ namespace TransactionsAPI.Services {
                 return await _repository.CategorizeTransaction(id, idCategory);
             }
             
+        }
+
+
+        //OVO JE DEO ZA B5 USLOV********************************************************************************************************
+        public async Task<List<SpendingByCategory>> GetAnaliytics(string? catcode, DateTime? startDate, DateTime? endDate, DirectionKind? directionKind) {
+            return await _repository.GetAnalytics(catcode, startDate, endDate, directionKind);
+        }
+
+
+        //OVO JE DEO ZA B6 USLOV********************************************************************************************************
+        public async Task<bool> SplitTransaction(Splits[] splits, string id) {
+
+            //Check if transaction exist
+            var transaction = await _repository.GetTransactionById(id);
+            if (transaction == null) return false;
+
+            //Check if all categories exist and if combined amount is the same as amount of choosen transaction
+            List<CategoryEntity> categories= new List<CategoryEntity>();
+            double amount = 0.0;
+            for(int i = 0; i < splits.Length; i++) {
+                var category = await _repository.GetCategoryByCodeId(splits[i].catcode);
+                if(category == null) return false;
+                else categories.Add(category);
+                amount += splits[i].amount;
+            }
+            if (transaction.Amount != amount) return false;
+
+            //Perfrom the split
+            return await _repository.SplitTheTransaction(transaction, splits);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TransactionsAPI.Commands;
 using TransactionsAPI.Database.Entities;
 using TransactionsAPI.Models;
 
@@ -55,12 +56,12 @@ namespace TransactionsAPI.Database.Repositories {
 
 
         //OVO OVDE JE ZA B2 USLOV*********************************************************************************************
-        public async Task<PageSortedList<TransactionEntity>> GetTransactions(TransactionKind? transaction_kind, DateTime? start_date, DateTime? end_date, int page = 1, int pageSize = 10, SortOrder sortOrder = SortOrder.Asc, string? sortBy = null) {
+        public async Task<PageSortedList<TransactionEntity>> GetTransactions(List<TransactionKind>? listOfKinds, DateTime? start_date, DateTime? end_date, int page = 1, int pageSize = 10, SortOrder sortOrder = SortOrder.Asc, string? sortBy = null) {
 
             var query = _dbContext.Transactions.AsQueryable();
 
-            if (transaction_kind != null) {
-                query = query.Where(x => x.Kind == transaction_kind);
+            if (listOfKinds.Count != 0) {
+                query = query.Where(x => listOfKinds.Contains(x.Kind));
             }
             
             if (start_date != null) {
@@ -108,6 +109,116 @@ namespace TransactionsAPI.Database.Repositories {
                 SortOrder = sortOrder,
                 Items = transactions
             };
+        }
+
+
+        //OVO OVDE JE ZA B5 USLOV****************************************************************************************
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+        public async Task<List<SpendingByCategory>> GetAnalytics(string? catcode, DateTime? startDate, DateTime? endDate, DirectionKind? directionKind) {
+
+            //Case when we gather informations about catcode category and their children categories
+            if (catcode != null) {
+                
+                /*var query1 = await (from trans in _dbContext.Transactions
+                                    join category in _dbContext.Categories
+                                    on trans.CategoryId equals category.Code
+
+                                    where (category.Code == catcode || category.Parent_code == catcode)
+                                    where (directionKind == null || (trans.Direction == directionKind))
+                                    where ((startDate == null || (trans.Date >= startDate)) &&
+                                    (endDate == null || (trans.Date <= endDate)))
+
+                                    group trans by new { trans.CategoryId} into g
+                                    select new SpendingByCategory{
+                                        catcode = g.Key.CategoryId,
+                                        count = g.Count(x => x.Id != null),
+                                        amount = g.Sum(x => x.Amount)
+                                    }).ToListAsync();
+                return query1;*/
+
+                var queryC = _dbContext.Categories.AsQueryable();
+                var queryT = _dbContext.Transactions.AsQueryable();
+
+                var finalList = await queryT.Join(queryC,
+                            queryT => queryT.CategoryId,
+                            queryC => queryC.Code,
+                            (queryT, queryC) => new {
+                                Id = queryT.Id,                             
+                                Amount = queryT.Amount,
+                                CatCode = queryT.CategoryId,
+                                ParentCode = queryC.Parent_code,
+                                Direction = queryT.Direction,
+                                Date = queryT.Date
+                            }).Where(x => x.ParentCode.Equals(catcode) || x.CatCode.Equals(catcode))
+                            .Where(x => directionKind == null || (x.Direction == directionKind))
+                            .Where(x => (startDate == null || (x.Date >= startDate)) && (endDate == null || (x.Date <= endDate)))
+                            .GroupBy(x => x.CatCode)
+                            .Select(x => new SpendingByCategory {
+                                catcode = x.First().CatCode,
+                                count = x.Count(),
+                                amount = x.Sum(c => c.Amount)
+                            }).ToListAsync();
+
+                return finalList;
+            }
+
+            //Case when we gather informations about root categories
+            else {
+                List<SpendingByCategory> listOfSpendings = new List<SpendingByCategory>();
+
+                var query = _dbContext.Categories.AsQueryable();
+                query = query.Where(x => x.Parent_code.Equals(""));
+                List<CategoryEntity> listOfRoots = await query.ToListAsync();
+
+                for (int i = 0; i < listOfRoots.Count; i++) {
+                    string rootCode = listOfRoots[i].Code;
+                    List<CategoryEntity> listOfChildrenAndRoot = await _dbContext.Categories.AsQueryable().Where(x => x.Parent_code.Equals(rootCode) || x.Code.Equals(rootCode)).ToListAsync();
+
+                    List<TransactionEntity> listOfTransactions = await _dbContext.Transactions.AsQueryable()
+                        .Where(x => listOfChildrenAndRoot.Contains(x.Category))
+                        .Where(x => directionKind == null || x.Direction == directionKind)
+                        .Where(x => (startDate == null || x.Date >= startDate) && (endDate == null || x.Date <= endDate)).ToListAsync();
+
+
+                    SpendingByCategory s = new SpendingByCategory(); s.amount = 0.0; s.count = 0; s.catcode = rootCode;
+                    for(int j = 0; j < listOfTransactions.Count; j++) {
+                        s.amount += listOfTransactions[j].Amount;
+                        s.count++;
+                    }
+
+                    if(s.count > 0) listOfSpendings.Add(s);
+                }
+                return listOfSpendings;
+            }
+        }
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
+
+
+        //OVO OVDE JE ZA B6 USLOV********************************************************************************************************
+        public async Task<bool> SplitTheTransaction(TransactionEntity transaction, Splits[] splits) {
+
+            var listOfAlreadyExistingSplits = await _dbContext.SplitsOfTransaction.AsQueryable().Where(x => x.TransactionId.Equals(transaction.Id)).ToListAsync();
+
+            for (int i = 0; i < listOfAlreadyExistingSplits.Count; i++) { 
+                _dbContext.SplitsOfTransaction.Remove(listOfAlreadyExistingSplits[i]);
+                await _dbContext.SaveChangesAsync();
+            }
+
+
+
+            for (int i = 0; i < splits.Length; i++) {
+                var category = await GetCategoryByCodeId(splits[i].catcode);
+                double amount = splits[i].amount;
+                SplitTransactionEntity split = new SplitTransactionEntity() { amount = amount, catcode = category.Code, Transaction = transaction, TransactionId = transaction.Id };
+
+                if(transaction.SplitTransactions == null) transaction.SplitTransactions = new List<SplitTransactionEntity>();
+
+                transaction.SplitTransactions.Add(split);
+                _dbContext.SplitsOfTransaction.Add(split);
+            }
+            
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
     }
 }

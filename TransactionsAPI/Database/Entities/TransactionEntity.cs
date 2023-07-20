@@ -16,6 +16,7 @@ namespace TransactionsAPI.Database.Entities {
             Currency = _currency;
             Mcc = _mcc;
             Kind = _kind;
+            SplitTransactions = new List<SplitTransactionEntity>();
         }
 
         public string Id { get; set; }
@@ -29,6 +30,7 @@ namespace TransactionsAPI.Database.Entities {
         public TransactionKind Kind { get; set; }
         public string? CategoryId { get; set; }
         public CategoryEntity? Category { get; set; }
-       
+        public ICollection<SplitTransactionEntity>? SplitTransactions { get; set; }
+
     }
 }

@@ -6,6 +6,10 @@ namespace TransactionsAPI.Mapping {
     public class AutoMapperProfile : Profile{
         public AutoMapperProfile() {
 
+            CreateMap<SplitTransaction, SplitTransactionEntity>();
+
+            CreateMap<SplitTransactionEntity, SplitTransaction>();
+
             CreateMap<Category, CategoryEntity>();
 
             CreateMap<CategoryEntity, Category>();
