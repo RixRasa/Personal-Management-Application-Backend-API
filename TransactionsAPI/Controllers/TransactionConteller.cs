@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using TransactionsAPI.Models;
 using TransactionsAPI.Services;
 using TransactionsAPI.Commands;
+using Microsoft.AspNetCore.Cors;
 
 namespace TransactionsAPI.Controllers {
+    [EnableCors("MyCORSPolicy")]
     [ApiController]
     [Route("v1/api")]
     public class TransactionControler : ControllerBase {
@@ -17,7 +19,6 @@ namespace TransactionsAPI.Controllers {
         }
 
 
-        //IMPLEMENTIRAJ DA BUDE LISTA KINDOVA BRE
         //METHOD CONNECTED TO RETRIEVING DATA OF TRANSACTIONS **********************************************************************************************
         [HttpGet("transactions")]
         public async Task<IActionResult> GetTransactions([FromQuery] string? transactionKind = null, [FromQuery] DateTime? start_date = null, [FromQuery] DateTime? end_date = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] SortOrder sortOrder = SortOrder.Asc, [FromQuery] string? sortBy = null) {
@@ -31,8 +32,6 @@ namespace TransactionsAPI.Controllers {
                     listOfKinds.Add(tKind);
                 }
             }
-            
-            
             
             var transactions = await _transactionService.GetTransactions(listOfKinds, start_date, end_date, page, pageSize, sortOrder, sortBy);
             return Ok(transactions);
@@ -61,7 +60,6 @@ namespace TransactionsAPI.Controllers {
                             DirectionKind directions;
                             Enum.TryParse<DirectionKind>(cells[3], out directions);
 
-
                             double amount = parseStringToDouble(cells[4]);
 
                             string description = cells[5];
@@ -73,9 +71,18 @@ namespace TransactionsAPI.Controllers {
                             TransactionKind kind;
                             Enum.TryParse<TransactionKind>(cells[8], out kind);
 
-                            Transaction transaction = new Transaction(Id, Benef_name, date, directions, amount, description, currency, mcc, kind);
 
-                            var inserted = await _transactionService.InsertTransactions(transaction);
+                            var inserted = await _transactionService.InsertTransactions(new Transaction() {
+                                Id = Id,
+                                Beneficiary_name = Benef_name,
+                                Date = date,
+                                Amount = amount,
+                                Direction = directions,
+                                Description = description,
+                                Currency = currency,
+                                Mcc = mcc,
+                                Kind = kind
+                            });
                             if (inserted == false) return BadRequest("Transaction Already Exist");
                         }
                         count = 1;
@@ -144,7 +151,7 @@ namespace TransactionsAPI.Controllers {
         [HttpPost("transactions/{id}/categorize")]
         public async Task<IActionResult> GiveCategoryToTransaction([FromRoute] string id, [FromBody] CategorizeTransactionCommand command) {
             var categorised = await _transactionService.CategorizeTransaction(id, command.catcode);
-            if (categorised == null) return BadRequest("Category or Transaction You picked doesnt exist");
+            if (categorised == false) return BadRequest("Category or Transaction You picked doesnt exist");
             else return Ok("Categorisation completed"); 
         }
 

@@ -56,7 +56,7 @@ namespace TransactionsAPI.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     catcode = table.Column<string>(type: "text", nullable: false),
                     amount = table.Column<double>(type: "double precision", nullable: false),
-                    TransactionId = table.Column<string>(type: "text", nullable: false)
+                    TransactionId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -65,8 +65,7 @@ namespace TransactionsAPI.Migrations
                         name: "FK_splitsOfTransaction_transactions_TransactionId",
                         column: x => x.TransactionId,
                         principalTable: "transactions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(

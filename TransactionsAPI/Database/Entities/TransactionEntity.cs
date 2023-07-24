@@ -30,7 +30,7 @@ namespace TransactionsAPI.Database.Entities {
         public TransactionKind Kind { get; set; }
         public string? CategoryId { get; set; }
         public CategoryEntity? Category { get; set; }
-        public ICollection<SplitTransactionEntity>? SplitTransactions { get; set; }
+        public ICollection<SplitTransactionEntity> SplitTransactions { get; set; }
 
     }
 }

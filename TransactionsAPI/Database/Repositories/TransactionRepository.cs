@@ -18,9 +18,10 @@ namespace TransactionsAPI.Database.Repositories {
             var category = await _dbContext.Categories.SingleAsync(x => x.Code.Equals(idCategory));
             var transaction = await _dbContext.Transactions.SingleAsync(x => x.Id.Equals(id));
 
+
             transaction.Category = category;
             transaction.CategoryId = category.Code;
-
+            _dbContext.Update(transaction);
             await _dbContext.SaveChangesAsync();
             return true;
         }
@@ -44,14 +45,15 @@ namespace TransactionsAPI.Database.Repositories {
 
 
         //OVO OVDE JE ZA B1 USLOV********************************************************************************************
-        public async Task<bool> CreateProduct(TransactionEntity transactionEntity) {
+        public async Task<bool> CreateTransaction(TransactionEntity transactionEntity) {
             _dbContext.Transactions.Add(transactionEntity);
             await _dbContext.SaveChangesAsync();
             return true;
         }
 
         public async Task<TransactionEntity> GetTransactionById(string Id) {
-            return await _dbContext.Transactions.FirstOrDefaultAsync(t => t.Id.Equals(Id));
+            
+            return await _dbContext.Transactions.Include(x => x.SplitTransactions).FirstOrDefaultAsync(t => t.Id.Equals(Id));
         }
 
 
@@ -88,18 +90,34 @@ namespace TransactionsAPI.Database.Repositories {
                     case "description":
                         query = sortOrder == SortOrder.Asc ? query.OrderBy(x => x.Description) : query.OrderByDescending(x => x.Description);
                         break;
+
                 }
             }
             else {
-                query = query.OrderBy(x => x.Id);
+                query = query.OrderByDescending(x => x.Date).ThenBy(x => x.CategoryId);
             }
 
             
 
             query = query.Skip((page - 1) * pageSize).Take(pageSize);
 
+            query = query.Include(x => x.Category);
+            query = query.Include(x => x.SplitTransactions);
+
             var transactions = await query.ToListAsync();
 
+           /* for (int i = 0; i < transactions.Count; i++) {
+                if (transactions[i].CategoryId != null) {
+                    var category = await _dbContext.Categories.FirstOrDefaultAsync(x => x.Code.Equals(transactions[i].CategoryId));
+                    transactions[i].Category = category;
+                }
+
+
+                //var listOfSplits = await _dbContext.SplitsOfTransaction.AsQueryable().Where(x => x.TransactionId.Equals(transactions[i].Id)).ToListAsync();
+                //transactions[i].SplitTransactions = listOfSplits;
+            }*/
+
+           
             return new PageSortedList<TransactionEntity> {
                 TotalPages = totalPages,
                 TotalCount = totalCount,
@@ -201,23 +219,26 @@ namespace TransactionsAPI.Database.Repositories {
 
             for (int i = 0; i < listOfAlreadyExistingSplits.Count; i++) { 
                 _dbContext.SplitsOfTransaction.Remove(listOfAlreadyExistingSplits[i]);
-                await _dbContext.SaveChangesAsync();
-            }
-
-
-
-            for (int i = 0; i < splits.Length; i++) {
-                var category = await GetCategoryByCodeId(splits[i].catcode);
-                double amount = splits[i].amount;
-                SplitTransactionEntity split = new SplitTransactionEntity() { amount = amount, catcode = category.Code, Transaction = transaction, TransactionId = transaction.Id };
-
-                if(transaction.SplitTransactions == null) transaction.SplitTransactions = new List<SplitTransactionEntity>();
-
-                transaction.SplitTransactions.Add(split);
-                _dbContext.SplitsOfTransaction.Add(split);
-            }
             
+            }
             await _dbContext.SaveChangesAsync();
+
+            //Persisting splits into database
+            for (int i = 0; i < splits.Length; i++) {
+                
+                SplitTransactionEntity split = new SplitTransactionEntity() { amount = splits[i].amount, catcode = splits[i].catcode, Transaction = transaction ,TransactionId = transaction.Id };
+                transaction.SplitTransactions.Add(split);         
+            }
+            await _dbContext.SaveChangesAsync();
+            /*
+            //Adding splits to transaction
+            var listOfSplits = await _dbContext.SplitsOfTransaction.AsQueryable().Where(x => x.TransactionId.Equals(transaction.Id)).ToListAsync();
+            for (int i = 0; i < listOfSplits.Count; i++) {
+                transaction.SplitTransactions.Add(listOfSplits[i]);
+                await _dbContext.SaveChangesAsync();
+
+            }*/
+
             return true;
         }
     }

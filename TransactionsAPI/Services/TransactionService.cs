@@ -45,7 +45,7 @@ namespace TransactionsAPI.Services {
         public async Task<bool> InsertTransactions(Transaction t) {
             var checkIfTransactionExist = await CheckIfTransactionExist(t.Id);
             if (!checkIfTransactionExist) {
-                return await _repository.CreateProduct(_mapper.Map<TransactionEntity>(t));
+                return await _repository.CreateTransaction(_mapper.Map<TransactionEntity>(t));
             }
             return false;
 

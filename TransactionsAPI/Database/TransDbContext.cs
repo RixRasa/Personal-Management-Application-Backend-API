@@ -34,7 +34,8 @@ namespace TransactionsAPI.Database {
                 builder.Property(x => x.Currency);
                 builder.Property(x => x.Mcc);
                 builder.Property(x => x.Kind).HasConversion<string>();
-                
+                //builder.HasMany<SplitTransactionEntity>(x => x.SplitTransactions);
+                //builder.Property(x => x.SplitTransactions);
             });
 
             modelBuilder.Entity<CategoryEntity>(builder => {

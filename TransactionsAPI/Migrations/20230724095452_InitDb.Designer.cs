@@ -12,7 +12,7 @@ using TransactionsAPI.Database;
 namespace TransactionsAPI.Migrations
 {
     [DbContext(typeof(TransDbContext))]
-    [Migration("20230720140851_InitDb")]
+    [Migration("20230724095452_InitDb")]
     partial class InitDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,7 +50,6 @@ namespace TransactionsAPI.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("TransactionId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<double>("amount")
@@ -116,9 +115,7 @@ namespace TransactionsAPI.Migrations
                 {
                     b.HasOne("TransactionsAPI.Database.Entities.TransactionEntity", "Transaction")
                         .WithMany("SplitTransactions")
-                        .HasForeignKey("TransactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TransactionId");
 
                     b.Navigation("Transaction");
                 });
@@ -126,10 +123,15 @@ namespace TransactionsAPI.Migrations
             modelBuilder.Entity("TransactionsAPI.Database.Entities.TransactionEntity", b =>
                 {
                     b.HasOne("TransactionsAPI.Database.Entities.CategoryEntity", "Category")
-                        .WithMany()
+                        .WithMany("Transactions")
                         .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("TransactionsAPI.Database.Entities.CategoryEntity", b =>
+                {
+                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("TransactionsAPI.Database.Entities.TransactionEntity", b =>
