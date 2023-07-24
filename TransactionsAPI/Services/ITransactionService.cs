@@ -1,31 +1,36 @@
-﻿using TransactionsAPI.Commands;
+﻿using Microsoft.AspNetCore.Mvc;
+using TransactionsAPI.Commands;
 using TransactionsAPI.Models;
 
 namespace TransactionsAPI.Services {
     public interface ITransactionService {
 
 
-        //OVO OVDE JE ZA B1 USLOV********************************************************************************************
+        //*************** B1 ********************************************************************************************
         Task<bool> InsertTransactions(Transaction t);
 
 
-        //OVO OVDE JE ZA B2 USLOV********************************************************************************************
+        //*************** B2 ********************************************************************************************
         Task<PageSortedList<Transaction>> GetTransactions(List<TransactionKind>? listOfKinds, DateTime? start_date, DateTime? end_date, int page, int pageSize, SortOrder sortOrder, string? sortBy);
 
 
-        //OVO JE DEO ZA B3 USLOV*********************************************************************************************
+        //*************** B3 *********************************************************************************************
         Task<bool> InsertCategory(Category c);
 
 
-        //OVO OVDE JE ZA B4 USLOV********************************************************************************************
+        //*************** B4 ********************************************************************************************
         Task<bool> CategorizeTransaction(string id, string idCategory);
 
 
-        //OVO OVDE JE ZA B5 USLOV********************************************************************************************
+        //*************** B5 ********************************************************************************************
         Task<List<SpendingByCategory>> GetAnaliytics(string? catcode, DateTime? startDate, DateTime? endDate, DirectionKind? directionKind);
 
 
-        //OVO OVDE JE ZA B6 USLOV********************************************************************************************
+        //*************** B6 ********************************************************************************************
         Task<bool> SplitTransaction(Splits[] splits, string id);
+
+
+        //*************** B7 ********************************************************************************************
+        Task <List<Category>> GetCategories(string? parentCode);
     }
 }

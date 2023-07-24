@@ -173,5 +173,13 @@ namespace TransactionsAPI.Controllers {
             return Ok("Split is done");
         }
 
+
+        //METHOD CONNECTED TO GETTING ALL ROOT CATEGORIES OR CHILD-CATEGORIES OF ROOT CATEGORY
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetCategories([FromQuery] string? parentCode = null) {
+            List<Category> list = await _transactionService.GetCategories(parentCode);
+            return Ok(list);
+        }
+
     }
 }

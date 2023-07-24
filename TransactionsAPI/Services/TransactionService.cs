@@ -16,7 +16,7 @@ namespace TransactionsAPI.Services {
         }
 
 
-        //OVO JE DEO ZA B1 USLOV****************************************************************************************************
+        //*************** B1 ****************************************************************************************************
         public async Task<bool> InsertTransactions(Transaction t) {
             var checkIfTransactionExist = await CheckIfTransactionExist(t.Id);
             if (!checkIfTransactionExist) {
@@ -34,15 +34,24 @@ namespace TransactionsAPI.Services {
         }
 
 
-        //OVDE JE DEO ZA B2 USLOV**************************************************************************************************
+        //*************** B2 **************************************************************************************************
         public async Task<PageSortedList<Transaction>> GetTransactions(List<TransactionKind>? listOfKinds, DateTime? start_date, DateTime? end_date, int page, int pageSize, SortOrder sortOrder, string? sortBy) {
             var transactions = await _repository.GetTransactions(listOfKinds, start_date, end_date, page, pageSize, sortOrder, sortBy);
             return _mapper.Map<PageSortedList<Transaction>>(transactions);
         }
 
 
-        //OVDE JE DEO ZA B3 USLOV**************************************************************************************************
+        //*************** B3 **************************************************************************************************
         public async Task<bool> InsertCategory(Category c) {
+
+            //Checking if there is a Category with Code = c.ParentCode
+            if (!c.Parent_code.Equals("")) {
+                var checkIfParentCategoryExist = await CheckIfCategoryExist(c.Parent_code);
+                if (checkIfParentCategoryExist == false) return false;
+            }
+            
+
+            //Checking if there is already a Category with same Code = c.Code
             var checkIfCategoryExist = await CheckIfCategoryExist(c.Code);
             if (checkIfCategoryExist) {
                 return await _repository.UpdateCategory(c);
@@ -59,7 +68,7 @@ namespace TransactionsAPI.Services {
         }
 
 
-        //OVO JE DEO ZA B4 USLOV*******************************************************************************************************
+        //*************** B4 *******************************************************************************************************
         public async Task<bool> CategorizeTransaction(string id, string idCategory) {
             var transaction = await _repository.GetTransactionById(id);
             var category = await _repository.GetCategoryByCodeId(idCategory);
@@ -71,13 +80,13 @@ namespace TransactionsAPI.Services {
         }
 
 
-        //OVO JE DEO ZA B5 USLOV********************************************************************************************************
+        //*************** B5 ********************************************************************************************************
         public async Task<List<SpendingByCategory>> GetAnaliytics(string? catcode, DateTime? startDate, DateTime? endDate, DirectionKind? directionKind) {
             return await _repository.GetAnalytics(catcode, startDate, endDate, directionKind);
         }
 
 
-        //OVO JE DEO ZA B6 USLOV********************************************************************************************************
+        //*************** B6 ********************************************************************************************************
         public async Task<bool> SplitTransaction(Splits[] splits, string id) {
 
             //Check if transaction exist
@@ -95,6 +104,21 @@ namespace TransactionsAPI.Services {
 
             //Perfrom the split
             return await _repository.SplitTheTransaction(transaction, splits);
+        }
+
+
+        //*************** B7 ********************************************************************************************************
+        public async Task<List<Category>> GetCategories(string? parentCode) {
+            if(parentCode != null) {
+                //We will first check if there is a Category with code = parentCode
+                var category = await _repository.GetCategoryByCodeId(parentCode);
+                if (category == null) return null;
+                else return _mapper.Map<List<Category>>(await _repository.GetChildCategories(parentCode));
+            }
+            else {
+                return _mapper.Map<List<Category>>(await _repository.GetRootCategories());
+            }
+            
         }
     }
 }

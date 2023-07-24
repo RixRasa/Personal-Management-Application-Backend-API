@@ -216,5 +216,15 @@ namespace TransactionsAPI.Database.Repositories {
             await _dbContext.SaveChangesAsync();
             return true;
         }
+
+
+        //*************** B7 ********************************************************************************************************
+        public async Task<List<CategoryEntity>> GetChildCategories(string parentCode) {
+            return await _dbContext.Categories.AsQueryable().Where(x => x.Parent_code.Equals(parentCode)).ToListAsync(); 
+        }
+
+        public async Task<List<CategoryEntity>> GetRootCategories() {
+            return await _dbContext.Categories.AsQueryable().Where(x => x.Parent_code.Equals("")).ToListAsync();
+        }
     }
 }

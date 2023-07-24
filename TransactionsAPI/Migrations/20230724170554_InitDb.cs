@@ -54,8 +54,8 @@ namespace TransactionsAPI.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    catcode = table.Column<string>(type: "text", nullable: false),
-                    amount = table.Column<double>(type: "double precision", nullable: false),
+                    Catcode = table.Column<string>(type: "text", nullable: false),
+                    Amount = table.Column<double>(type: "double precision", nullable: false),
                     TransactionId = table.Column<string>(type: "text", nullable: true),
                     TransactionEntityId = table.Column<string>(type: "text", nullable: true)
                 },
