@@ -12,7 +12,7 @@ using TransactionsAPI.Database;
 namespace TransactionsAPI.Migrations
 {
     [DbContext(typeof(TransDbContext))]
-    [Migration("20230724095452_InitDb")]
+    [Migration("20230724101906_InitDb")]
     partial class InitDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -49,6 +49,9 @@ namespace TransactionsAPI.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("TransactionEntityId")
+                        .HasColumnType("text");
+
                     b.Property<string>("TransactionId")
                         .HasColumnType("text");
 
@@ -61,7 +64,7 @@ namespace TransactionsAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TransactionId");
+                    b.HasIndex("TransactionEntityId");
 
                     b.ToTable("splitsOfTransaction", (string)null);
                 });
@@ -113,11 +116,9 @@ namespace TransactionsAPI.Migrations
 
             modelBuilder.Entity("TransactionsAPI.Database.Entities.SplitTransactionEntity", b =>
                 {
-                    b.HasOne("TransactionsAPI.Database.Entities.TransactionEntity", "Transaction")
+                    b.HasOne("TransactionsAPI.Database.Entities.TransactionEntity", null)
                         .WithMany("SplitTransactions")
-                        .HasForeignKey("TransactionId");
-
-                    b.Navigation("Transaction");
+                        .HasForeignKey("TransactionEntityId");
                 });
 
             modelBuilder.Entity("TransactionsAPI.Database.Entities.TransactionEntity", b =>

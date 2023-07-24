@@ -226,7 +226,7 @@ namespace TransactionsAPI.Database.Repositories {
             //Persisting splits into database
             for (int i = 0; i < splits.Length; i++) {
                 
-                SplitTransactionEntity split = new SplitTransactionEntity() { amount = splits[i].amount, catcode = splits[i].catcode, Transaction = transaction ,TransactionId = transaction.Id };
+                SplitTransactionEntity split = new SplitTransactionEntity() { amount = splits[i].amount, catcode = splits[i].catcode ,TransactionId = transaction.Id };
                 transaction.SplitTransactions.Add(split);         
             }
             await _dbContext.SaveChangesAsync();
