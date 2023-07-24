@@ -8,7 +8,6 @@ namespace TransactionsAPI.Database {
 
         public DbSet<TransactionEntity> Transactions { get; set; }
         public DbSet<CategoryEntity> Categories{ get; set; }
-
         public DbSet<SplitTransactionEntity> SplitsOfTransaction { get; set; }
 
         public TransDbContext(DbContextOptions options): base(options) { 
@@ -34,8 +33,6 @@ namespace TransactionsAPI.Database {
                 builder.Property(x => x.Currency);
                 builder.Property(x => x.Mcc);
                 builder.Property(x => x.Kind).HasConversion<string>();
-                //builder.HasMany<SplitTransactionEntity>(x => x.SplitTransactions);
-                //builder.Property(x => x.SplitTransactions);
             });
 
             modelBuilder.Entity<CategoryEntity>(builder => {
@@ -50,16 +47,11 @@ namespace TransactionsAPI.Database {
             modelBuilder.Entity<SplitTransactionEntity>(builder => {
                 builder.ToTable("splitsOfTransaction");
                 builder.HasKey(x => x.Id);
-
+                //definition of columns
                 builder.Property(x => x.Id).IsRequired().ValueGeneratedOnAdd();
-                builder.Property(x => x.catcode);
-                builder.Property(x => x.amount);
-                
-
+                builder.Property(x => x.Catcode);
+                builder.Property(x => x.Amount);
             });
-            
-            //base.OnModelCreating(modelBuilder);
-
         }
     }
 }

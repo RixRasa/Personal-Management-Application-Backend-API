@@ -6,8 +6,8 @@ namespace TransactionsAPI.Database.Entities {
 
        
         public int Id { get; set; }
-        public string catcode { get; set; }
-        public double amount { get; set; }
+        public string Catcode { get; set; }
+        public double Amount { get; set; }
        // public TransactionEntity? Transaction { get; set; }
         public string? TransactionId { get; set; }
     }

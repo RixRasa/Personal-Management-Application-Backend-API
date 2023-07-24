@@ -21,11 +21,12 @@ namespace TransactionsAPI.Controllers {
 
         //METHOD CONNECTED TO RETRIEVING DATA OF TRANSACTIONS **********************************************************************************************
         [HttpGet("transactions")]
-        public async Task<IActionResult> GetTransactions([FromQuery] string? transactionKind = null, [FromQuery] DateTime? start_date = null, [FromQuery] DateTime? end_date = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] SortOrder sortOrder = SortOrder.Asc, [FromQuery] string? sortBy = null) {
+        public async Task<IActionResult> GetTransactions([FromQuery] string? transactionKindQuery = null, [FromQuery] DateTime? start_date = null, [FromQuery] DateTime? end_date = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] SortOrder sortOrder = SortOrder.Asc, [FromQuery] string? sortBy = null) {
 
+            //Parsing transactionKinds string
             List<TransactionKind> listOfKinds = new List<TransactionKind>();
-            if(transactionKind != null) {
-                string[] transactionKinds = transactionKind.Split(',');
+            if(transactionKindQuery != null) {
+                string[] transactionKinds = transactionKindQuery.Split(',');
                 foreach(string s in transactionKinds) {
                     TransactionKind tKind =  new TransactionKind();
                     Enum.TryParse<TransactionKind>(s, out tKind);
@@ -41,9 +42,10 @@ namespace TransactionsAPI.Controllers {
         //METHOD CONNECTED TO IMPORTING TRANSACTIONS *******************************************************************************************************
         [HttpPost("transactions/import")]
         public async Task<IActionResult> ImportAllTransactions([FromForm] IFormFile csvFile) {
+
             using (var reader = new StreamReader(csvFile.OpenReadStream())) {
 
-                int count = 0;
+                int count = 0;//this is used so we can avoid first row
                 while (reader.EndOfStream == false) {
                     var content = reader.ReadLine();
                     var cells = content.Split(',').ToList();
@@ -88,11 +90,10 @@ namespace TransactionsAPI.Controllers {
                         count = 1;
                     }
                 }
-
             }
             return Ok("Insert Completed");
         }
-
+        //Function used for parsing "amount" values
         static double parseStringToDouble(string s) {
             s = s.Trim('"');
 
@@ -169,7 +170,7 @@ namespace TransactionsAPI.Controllers {
         public async Task<IActionResult> SplitTransaction([FromBody] SplitTransactionCommand splits, [FromRoute] string id) {
             var splited = await _transactionService.SplitTransaction(splits.Splits, id);
             if (splited == false) return BadRequest("Could not be splited");
-            return Ok();
+            return Ok("Split is done");
         }
 
     }
