@@ -75,7 +75,7 @@ namespace TransactionsAPI.Migrations
                     b.Property<double>("Amount")
                         .HasColumnType("double precision");
 
-                    b.Property<string>("Beneficiary_name")
+                    b.Property<string>("BeneficiaryName")
                         .IsRequired()
                         .HasColumnType("text");
 

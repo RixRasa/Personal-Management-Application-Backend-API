@@ -51,7 +51,7 @@ namespace TransactionsAPI.Database.Repositories {
                     case "Id":
                         query = sortOrder == SortOrder.Asc ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id);
                         break;
-                    case "Beneficiary_name":
+                    case "BeneficiaryName":
                         query = sortOrder == SortOrder.Asc ? query.OrderBy(x => x.BeneficiaryName) : query.OrderByDescending(x => x.BeneficiaryName);
                         break;
                     case "amount":
@@ -157,8 +157,8 @@ namespace TransactionsAPI.Database.Repositories {
                             .GroupBy(x => x.CatCode)
                             .Select(x => new SpendingByCategory {
                                 Catcode = x.First().CatCode,
-                                Count = x.Count(),
-                                Amount = x.Sum(c => c.Amount)
+                                count = x.Count(),
+                                amount = x.Sum(c => c.Amount)
                             }).ToListAsync();
 
                 return finalList;
@@ -182,13 +182,13 @@ namespace TransactionsAPI.Database.Repositories {
                         .Where(x => (startDate == null || x.Date >= startDate) && (endDate == null || x.Date <= endDate)).ToListAsync();
 
 
-                    SpendingByCategory s = new SpendingByCategory(); s.Amount = 0.0; s.Count = 0; s.Catcode = rootCode;
+                    SpendingByCategory s = new SpendingByCategory(); s.amount = 0.0; s.count = 0; s.Catcode = rootCode;
                     for(int j = 0; j < listOfTransactions.Count; j++) {
-                        s.Amount += listOfTransactions[j].Amount;
-                        s.Count++;
+                        s.amount += listOfTransactions[j].Amount;
+                        s.count++;
                     }
 
-                    if(s.Count > 0) listOfSpendings.Add(s);
+                    if(s.count > 0) listOfSpendings.Add(s);
                 }
                 return listOfSpendings;
             }

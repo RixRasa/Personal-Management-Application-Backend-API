@@ -28,7 +28,7 @@ namespace TransactionsAPI.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    Beneficiary_name = table.Column<string>(type: "text", nullable: false),
+                    BeneficiaryName = table.Column<string>(type: "text", nullable: false),
                     Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Direction = table.Column<string>(type: "text", nullable: false),
                     Amount = table.Column<double>(type: "double precision", nullable: false),

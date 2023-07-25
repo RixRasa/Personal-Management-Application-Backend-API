@@ -12,7 +12,7 @@ using TransactionsAPI.Database;
 namespace TransactionsAPI.Migrations
 {
     [DbContext(typeof(TransDbContext))]
-    [Migration("20230724170554_InitDb")]
+    [Migration("20230725170143_InitDb")]
     partial class InitDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -77,7 +77,7 @@ namespace TransactionsAPI.Migrations
                     b.Property<double>("Amount")
                         .HasColumnType("double precision");
 
-                    b.Property<string>("Beneficiary_name")
+                    b.Property<string>("BeneficiaryName")
                         .IsRequired()
                         .HasColumnType("text");
 
