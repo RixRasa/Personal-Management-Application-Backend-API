@@ -25,7 +25,7 @@ namespace TransactionsAPI.Database {
                 builder.HasKey(x => x.Id);
                 // definition of columns
                 builder.Property(x => x.Id).IsRequired();
-                builder.Property(x => x.Beneficiary_name);
+                builder.Property(x => x.BeneficiaryName);
                 builder.Property(x => x.Date);
                 builder.Property(x => x.Direction).HasConversion<string>();
                 builder.Property(x => x.Amount);

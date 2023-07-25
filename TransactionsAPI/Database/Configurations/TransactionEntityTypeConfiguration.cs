@@ -12,7 +12,7 @@ namespace TransactionsAPI.Database.Configurations {
             builder.HasKey(x => x.Id);
             // definition of columns
             builder.Property(x => x.Id).IsRequired();
-            builder.Property(x => x.Beneficiary_name).HasMaxLength(64);
+            builder.Property(x => x.BeneficiaryName).HasMaxLength(64);
             builder.Property(x => x.Date); 
             builder.Property(x => x.Direction).HasMaxLength(128);
             builder.Property(x => x.Amount);

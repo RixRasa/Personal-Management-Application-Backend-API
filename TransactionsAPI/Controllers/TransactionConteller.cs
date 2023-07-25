@@ -21,7 +21,7 @@ namespace TransactionsAPI.Controllers {
 
         //METHOD CONNECTED TO RETRIEVING DATA OF TRANSACTIONS **********************************************************************************************
         [HttpGet("transactions")]
-        public async Task<IActionResult> GetTransactions([FromQuery] string? transactionKindQuery = null, [FromQuery] DateTime? start_date = null, [FromQuery] DateTime? end_date = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] SortOrder sortOrder = SortOrder.Asc, [FromQuery] string? sortBy = null) {
+        public async Task<IActionResult> GetTransactions([FromQuery (Name = "transaction-kind")] string? transactionKindQuery = null, [FromQuery (Name = "start-date")] DateTime? start_date = null, [FromQuery(Name = "end-date")] DateTime? end_date = null, [FromQuery ] int page = 1, [FromQuery(Name = "page-size")] int pageSize = 10, [FromQuery(Name = "sort-order")] SortOrder sortOrder = SortOrder.Asc, [FromQuery(Name = "sort-by")] string? sortBy = null) {
 
             //Parsing transactionKinds string
             List<TransactionKind> listOfKinds = new List<TransactionKind>();
@@ -76,7 +76,7 @@ namespace TransactionsAPI.Controllers {
 
                             var inserted = await _transactionService.InsertTransactions(new Transaction() {
                                 Id = Id,
-                                Beneficiary_name = Benef_name,
+                                BeneficiaryName = Benef_name,
                                 Date = date,
                                 Amount = amount,
                                 Direction = directions,
@@ -159,7 +159,7 @@ namespace TransactionsAPI.Controllers {
 
         //METHOD CONNECTED TO ANALYZING SPENDINGS *************************************************************************************************************
         [HttpGet("spending-analytics")]
-        public async Task<IActionResult> GetSpendingAnalytics([FromQuery] string? catcode = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null, [FromQuery] DirectionKind? directionKind = null) {
+        public async Task<IActionResult> GetSpendingAnalytics([FromQuery(Name = "catcode")] string? catcode = null, [FromQuery(Name = "start-date")] DateTime? startDate = null, [FromQuery(Name = "end-date")] DateTime? endDate = null, [FromQuery(Name = "direction")] DirectionKind? directionKind = null) {
             List<SpendingByCategory> list = await _transactionService.GetAnaliytics(catcode, startDate, endDate, directionKind);
             return Ok(list);
         }
@@ -176,7 +176,7 @@ namespace TransactionsAPI.Controllers {
 
         //METHOD CONNECTED TO GETTING ALL ROOT CATEGORIES OR CHILD-CATEGORIES OF ROOT CATEGORY
         [HttpGet("categories")]
-        public async Task<IActionResult> GetCategories([FromQuery] string? parentCode = null) {
+        public async Task<IActionResult> GetCategories([FromQuery(Name = "parent-id")] string? parentCode = null) {
             List<Category> list = await _transactionService.GetCategories(parentCode);
             return Ok(list);
         }

@@ -52,7 +52,7 @@ namespace TransactionsAPI.Database.Repositories {
                         query = sortOrder == SortOrder.Asc ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id);
                         break;
                     case "Beneficiary_name":
-                        query = sortOrder == SortOrder.Asc ? query.OrderBy(x => x.Beneficiary_name) : query.OrderByDescending(x => x.Beneficiary_name);
+                        query = sortOrder == SortOrder.Asc ? query.OrderBy(x => x.BeneficiaryName) : query.OrderByDescending(x => x.BeneficiaryName);
                         break;
                     case "amount":
                         query = sortOrder == SortOrder.Asc ? query.OrderBy(x => x.Amount) : query.OrderByDescending(x => x.Amount);
@@ -156,9 +156,9 @@ namespace TransactionsAPI.Database.Repositories {
                             .Where(x => (startDate == null || (x.Date >= startDate)) && (endDate == null || (x.Date <= endDate)))
                             .GroupBy(x => x.CatCode)
                             .Select(x => new SpendingByCategory {
-                                catcode = x.First().CatCode,
-                                count = x.Count(),
-                                amount = x.Sum(c => c.Amount)
+                                Catcode = x.First().CatCode,
+                                Count = x.Count(),
+                                Amount = x.Sum(c => c.Amount)
                             }).ToListAsync();
 
                 return finalList;
@@ -182,13 +182,13 @@ namespace TransactionsAPI.Database.Repositories {
                         .Where(x => (startDate == null || x.Date >= startDate) && (endDate == null || x.Date <= endDate)).ToListAsync();
 
 
-                    SpendingByCategory s = new SpendingByCategory(); s.amount = 0.0; s.count = 0; s.catcode = rootCode;
+                    SpendingByCategory s = new SpendingByCategory(); s.Amount = 0.0; s.Count = 0; s.Catcode = rootCode;
                     for(int j = 0; j < listOfTransactions.Count; j++) {
-                        s.amount += listOfTransactions[j].Amount;
-                        s.count++;
+                        s.Amount += listOfTransactions[j].Amount;
+                        s.Count++;
                     }
 
-                    if(s.count > 0) listOfSpendings.Add(s);
+                    if(s.Count > 0) listOfSpendings.Add(s);
                 }
                 return listOfSpendings;
             }

@@ -6,9 +6,9 @@ namespace TransactionsAPI.Database.Entities {
         public TransactionEntity() {
 
         }
-        public TransactionEntity(string _TransactionId, string _Beneficiary_name, DateTime _date, DirectionKind _direction, double _amount, string _description, string _currency, string _mcc, TransactionKind _kind) {
+        public TransactionEntity(string _TransactionId, string _BeneficiaryName, DateTime _date, DirectionKind _direction, double _amount, string _description, string _currency, string _mcc, TransactionKind _kind) {
             Id = _TransactionId;
-            Beneficiary_name = _Beneficiary_name;
+            BeneficiaryName = _BeneficiaryName;
             Date = _date;
             Direction = _direction;
             Amount = _amount;
@@ -20,7 +20,7 @@ namespace TransactionsAPI.Database.Entities {
         }
 
         public string Id { get; set; }
-        public string Beneficiary_name { get; set; }
+        public string BeneficiaryName { get; set; }
         public DateTime Date { get; set; }
         public DirectionKind Direction { get; set; }
         public double Amount { get; set; }

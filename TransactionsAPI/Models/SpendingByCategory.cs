@@ -1,8 +1,14 @@
-﻿namespace TransactionsAPI.Models {
+﻿using System.Text.Json.Serialization;
+
+namespace TransactionsAPI.Models {
     public class SpendingByCategory {
-        public string catcode { get; set; }
-        public double amount { get; set; }
-        public int count { get; set; }
+
+        [JsonPropertyName("catcode")]
+        public string Catcode { get; set; }
+        [JsonPropertyName("amount")]
+        public double Amount { get; set; }
+        [JsonPropertyName("count")]
+        public int Count { get; set; }
 
     }
 }
