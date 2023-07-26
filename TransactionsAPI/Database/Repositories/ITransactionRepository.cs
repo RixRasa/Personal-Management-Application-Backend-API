@@ -1,4 +1,5 @@
-﻿using TransactionsAPI.Commands;
+﻿using Microsoft.AspNetCore.Mvc;
+using TransactionsAPI.Commands;
 using TransactionsAPI.Database.Entities;
 using TransactionsAPI.Models;
 
@@ -36,5 +37,13 @@ namespace TransactionsAPI.Database.Repositories {
         //**************** B7 **********************************************************************************************
         Task<List<CategoryEntity>> GetChildCategories(string parentCode);
         Task<List<CategoryEntity>> GetRootCategories();
+
+
+        //**************** A2 **********************************************************************************************
+        Task<bool> AutoCategorize(List<Rule> listOfRules);
+
+
+        //*************** INTEGRACIJA **************************************************************************************
+        Task<List<CategoryEntity>> GetRootCategoriess();
     }
 }

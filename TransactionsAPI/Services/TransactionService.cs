@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using TransactionsAPI.Commands;
 using TransactionsAPI.Database.Entities;
 using TransactionsAPI.Database.Repositories;
@@ -16,7 +17,7 @@ namespace TransactionsAPI.Services {
         }
 
 
-        //*************** B1 ****************************************************************************************************
+        //*************** B1 ***************************************************************************************************
         public async Task<bool> InsertTransactions(Transaction t) {
             var checkIfTransactionExist = await CheckIfTransactionExist(t.Id);
             if (!checkIfTransactionExist) {
@@ -68,7 +69,7 @@ namespace TransactionsAPI.Services {
         }
 
 
-        //*************** B4 *******************************************************************************************************
+        //*************** B4 *****************************************************************************************************
         public async Task<bool> CategorizeTransaction(string id, string idCategory) {
             var transaction = await _repository.GetTransactionById(id);
             var category = await _repository.GetCategoryByCodeId(idCategory);
@@ -80,30 +81,31 @@ namespace TransactionsAPI.Services {
         }
 
 
-        //*************** B5 ********************************************************************************************************
+        //*************** B5 ******************************************************************************************************
         public async Task<List<SpendingByCategory>> GetAnaliytics(string? catcode, DateTime? startDate, DateTime? endDate, DirectionKind? directionKind) {
             return await _repository.GetAnalytics(catcode, startDate, endDate, directionKind);
         }
 
 
-        //*************** B6 ********************************************************************************************************
-        public async Task<bool> SplitTransaction(Splits[] splits, string id) {
+        //*************** B6 *******************************************************************************************************
+        public async Task<int> SplitTransaction(Splits[] splits, string id) {
 
             //Check if transaction exist
             var transaction = await _repository.GetTransactionById(id);
-            if (transaction == null) return false;
+            if (transaction == null) return -1;
 
             //Check if all categories exist and if combined amount is the same as amount of choosen transaction
             double amount = 0.0;
             for(int i = 0; i < splits.Length; i++) {
                 var category = await _repository.GetCategoryByCodeId(splits[i].catcode);
-                if(category == null) return false;
+                if(category == null) return -2;
                 amount += splits[i].amount;
             }
-            if (transaction.Amount != amount) return false;
+            if (transaction.Amount != amount) return -3;
 
             //Perfrom the split
-            return await _repository.SplitTheTransaction(transaction, splits);
+            await _repository.SplitTheTransaction(transaction, splits);
+            return 0;
         }
 
 
@@ -119,6 +121,18 @@ namespace TransactionsAPI.Services {
                 return _mapper.Map<List<Category>>(await _repository.GetRootCategories());
             }
             
+        }
+
+
+        //*************** A2 ********************************************************************************************************
+        public async Task<bool> AutoCategorize(List<Rule> listOfRules) {
+            return await _repository.AutoCategorize(listOfRules);
+        }
+
+
+        //*************** INTEGRACIJA ***********************************************************************************************
+        public async Task<List<Category>> GetCategoriess() {
+            return _mapper.Map<List<Category>>(await _repository.GetRootCategoriess());
         }
     }
 }

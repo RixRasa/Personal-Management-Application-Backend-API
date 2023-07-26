@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TransactionsAPI.Commands;
 using TransactionsAPI.Database.Entities;
 using TransactionsAPI.Models;
@@ -14,7 +15,7 @@ namespace TransactionsAPI.Database.Repositories {
         }
 
 
-        //*************** B1 ********************************************************************************************
+        //*************** B1 *****************************************************************************************
         public async Task<bool> CreateTransaction(TransactionEntity transactionEntity) {
             _dbContext.Transactions.Add(transactionEntity);
             await _dbContext.SaveChangesAsync();
@@ -27,7 +28,7 @@ namespace TransactionsAPI.Database.Repositories {
         }
 
 
-        //*************** B2 *********************************************************************************************
+        //*************** B2 ******************************************************************************************
         public async Task<PageSortedList<TransactionEntity>> GetTransactions(List<TransactionKind>? listOfKinds, DateTime? start_date, DateTime? end_date, int page = 1, int pageSize = 10, SortOrder sortOrder = SortOrder.Asc, string? sortBy = null) {
 
             var query = _dbContext.Transactions.AsQueryable();
@@ -104,7 +105,7 @@ namespace TransactionsAPI.Database.Repositories {
         }
 
 
-        //*************** B4 ******************************************************************************************
+        //*************** B4 ********************************************************************************************
         public async Task<bool> CategorizeTransaction(TransactionEntity transaction, CategoryEntity category) {
             transaction.Category = category;
             transaction.CategoryId = category.Code;
@@ -114,7 +115,7 @@ namespace TransactionsAPI.Database.Repositories {
         }
 
 
-        //*************** B5 ****************************************************************************************
+        //*************** B5 ********************************************************************************************
 #pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
         public async Task<List<SpendingByCategory>> GetAnalytics(string? catcode, DateTime? startDate, DateTime? endDate, DirectionKind? directionKind) {
 
@@ -157,9 +158,13 @@ namespace TransactionsAPI.Database.Repositories {
                             .GroupBy(x => x.CatCode)
                             .Select(x => new SpendingByCategory {
                                 Catcode = x.First().CatCode,
-                                count = x.Count(),
-                                amount = x.Sum(c => c.Amount)
+                                Count = x.Count(),
+                                Amount = x.Sum(c => c.Amount)
                             }).ToListAsync();
+
+                for(int i = 0; i < finalList.Count; i++) {
+                    finalList[i].Amount = Math.Round(finalList[i].Amount, 3);
+                }
 
                 return finalList;
             }
@@ -182,13 +187,13 @@ namespace TransactionsAPI.Database.Repositories {
                         .Where(x => (startDate == null || x.Date >= startDate) && (endDate == null || x.Date <= endDate)).ToListAsync();
 
 
-                    SpendingByCategory s = new SpendingByCategory(); s.amount = 0.0; s.count = 0; s.Catcode = rootCode;
+                    SpendingByCategory s = new SpendingByCategory(); s.Amount = 0.0; s.Count = 0; s.Catcode = rootCode;
                     for(int j = 0; j < listOfTransactions.Count; j++) {
-                        s.amount += listOfTransactions[j].Amount;
-                        s.count++;
+                        s.Amount += listOfTransactions[j].Amount;
+                        s.Count++;
                     }
-
-                    if(s.count > 0) listOfSpendings.Add(s);
+                    s.Amount = Math.Round(s.Amount, 3);
+                    if(s.Count > 0) listOfSpendings.Add(s);
                 }
                 return listOfSpendings;
             }
@@ -196,7 +201,7 @@ namespace TransactionsAPI.Database.Repositories {
 #pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
 
 
-        //*************** B6 ********************************************************************************************************
+        //*************** B6 **************************************************************************************************
         public async Task<bool> SplitTheTransaction(TransactionEntity transaction, Splits[] splits) {
 
             //Check if there are already existing Splits
@@ -218,13 +223,41 @@ namespace TransactionsAPI.Database.Repositories {
         }
 
 
-        //*************** B7 ********************************************************************************************************
+        //*************** B7 ****************************************************************************************************
         public async Task<List<CategoryEntity>> GetChildCategories(string parentCode) {
             return await _dbContext.Categories.AsQueryable().Where(x => x.Parent_code.Equals(parentCode)).ToListAsync(); 
         }
 
         public async Task<List<CategoryEntity>> GetRootCategories() {
             return await _dbContext.Categories.AsQueryable().Where(x => x.Parent_code.Equals("")).ToListAsync();
+        }
+
+
+        //*************** A2 ****************************************************************************************************
+        public async Task<bool> AutoCategorize(List<Rule> listOfRules) {
+
+            for(int i = 0;i < listOfRules.Count;i++) {
+                var rule = listOfRules[i];
+                string catcode = rule.Catcode;
+                string predicate = rule.Predicate;
+
+                var listOfTransactions = await _dbContext.Transactions.FromSqlRaw("select * from transactions where" + predicate).ToListAsync();
+                for (int j = 0; j < listOfTransactions.Count; j++) {
+                    if (listOfTransactions[j].CategoryId == null) {
+                        var category = await GetCategoryByCodeId(catcode);
+                        listOfTransactions[j].CategoryId = catcode;
+                        listOfTransactions[j].Category = category;
+                    }
+                }
+                await _dbContext.SaveChangesAsync();
+            }
+            return true;
+        }
+
+
+        //*************** INTEGRACIJA *****************************************************************************************
+        public async Task<List<CategoryEntity>> GetRootCategoriess() {
+            return await _dbContext.Categories.AsQueryable().ToListAsync();
         }
     }
 }

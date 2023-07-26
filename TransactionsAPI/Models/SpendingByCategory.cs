@@ -6,9 +6,9 @@ namespace TransactionsAPI.Models {
         [JsonPropertyName("catcode")]
         public string Catcode { get; set; }
         [JsonPropertyName("amount")]
-        public double amount { get; set; }
+        public double Amount { get; set; }
         [JsonPropertyName("count")]
-        public int count { get; set; }
+        public int Count { get; set; }
 
     }
 }

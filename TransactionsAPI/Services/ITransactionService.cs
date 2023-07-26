@@ -27,10 +27,17 @@ namespace TransactionsAPI.Services {
 
 
         //*************** B6 ********************************************************************************************
-        Task<bool> SplitTransaction(Splits[] splits, string id);
+        Task<int> SplitTransaction(Splits[] splits, string id);
 
 
         //*************** B7 ********************************************************************************************
         Task <List<Category>> GetCategories(string? parentCode);
+
+
+        //*************** A2 ********************************************************************************************
+        Task<bool> AutoCategorize(List<Rule> listOfRules);
+
+        //*************** INTEGRACIJA ***********************************************************************************
+        Task<List<Category>> GetCategoriess();
     }
 }

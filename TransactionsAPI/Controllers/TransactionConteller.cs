@@ -3,6 +3,8 @@ using TransactionsAPI.Models;
 using TransactionsAPI.Services;
 using TransactionsAPI.Commands;
 using Microsoft.AspNetCore.Cors;
+using System.Net;
+using TransactionsAPI.Error;
 
 namespace TransactionsAPI.Controllers {
     [EnableCors("MyCORSPolicy")]
@@ -85,7 +87,14 @@ namespace TransactionsAPI.Controllers {
                                 Mcc = mcc,
                                 Kind = kind
                             });
-                            if (inserted == false) return BadRequest("Transaction Already Exist");
+                            if (inserted == false) {
+                                CustomError error = new CustomError() {
+                                    problem = "transaction-already-exist",
+                                    message = "transaction already exist",
+                                    details = "You cannot import transaction with same ID twice"
+                                };
+                                return new ObjectResult(error) { StatusCode = 440 };
+                            }
                         }
                         count = 1;
                     }
@@ -138,13 +147,22 @@ namespace TransactionsAPI.Controllers {
 
                             var inserted = await _transactionService.InsertCategory(category);
                             
-                            if(inserted == false) return BadRequest("Couldnt import category");
+                            if(inserted == false) {
+                                CustomError error = new CustomError() {
+                                    problem = "parentcode-of-category-does-not-exist",
+                                    message = "parentcode of category does not exist",
+                                    details = "If you are importing category which is not root category, there must already be category with same code as parent-code of " + "category that you are importing"
+                                };
+                                return new ObjectResult(error) { StatusCode = 440 };
+                                
+                            }
                         }
                         count = 1;
                     }
                 }
             }
             return Ok("Insert Completed");
+            
         }
 
 
@@ -152,7 +170,14 @@ namespace TransactionsAPI.Controllers {
         [HttpPost("transactions/{id}/categorize")]
         public async Task<IActionResult> GiveCategoryToTransaction([FromRoute] string id, [FromBody] CategorizeTransactionCommand command) {
             var categorised = await _transactionService.CategorizeTransaction(id, command.catcode);
-            if (categorised == false) return BadRequest("Category or Transaction You picked doesnt exist");
+            if (categorised == false) {
+                CustomError error = new CustomError() {
+                    problem = "transaction-or-category-dont-exist",
+                    message = "transaction or category dont exist",
+                    details = "When you are categorizing a transaction both category and transaction must already be in a database"
+                };
+                return new ObjectResult(error) { StatusCode = 440 };
+            }
             else return Ok("Categorisation completed"); 
         }
 
@@ -165,11 +190,34 @@ namespace TransactionsAPI.Controllers {
         }
 
 
-        //METHOD CONNECTED TO SPLITING A TRANSACTION IN SMALLER TRANSACTIONS***********************************************************************************
+        //METHOD CONNECTED TO SPLITING A TRANSACTION IN SMALLER TRANSACTIONS **********************************************************************************
         [HttpPost("transactions/{id}/split")]
         public async Task<IActionResult> SplitTransaction([FromBody] SplitTransactionCommand splits, [FromRoute] string id) {
             var splited = await _transactionService.SplitTransaction(splits.Splits, id);
-            if (splited == false) return BadRequest("Could not be splited");
+            if (splited == -1) {
+                CustomError error = new CustomError() {
+                    problem = "transaction-does-not-exist",
+                    message = "transaction does not exist",
+                    details = "Transaction you are splitting needs to exist already in a database"
+                };
+                return new ObjectResult(error) { StatusCode = 440 };
+            }
+            if(splited == -2) {
+                CustomError error = new CustomError() {
+                    problem = "category-does-not-exist",
+                    message = "category does not exist",
+                    details = "Categories you are using while splitting need to exist already in a database"
+                };
+                return new ObjectResult(error) { StatusCode = 440 };
+            }
+            if(splited == -3) {
+                CustomError error = new CustomError() {
+                    problem = "Amount-of-splits-are-not-same-as-transaction-amount",
+                    message = "Amount of splits are not same as transaction amount",
+                    details = "Amount of splits needs to be same as amount of transaction that you are splitting"
+                };
+                return new ObjectResult(error) { StatusCode = 440 };
+            }
             return Ok("Split is done");
         }
 
@@ -181,5 +229,46 @@ namespace TransactionsAPI.Controllers {
             return Ok(list);
         }
 
+        //INTEGRACIJA******************************************************************************************************************************************
+        [HttpGet("categoriess")]
+        public async Task<IActionResult> GetCategoriess() {
+            List<Category> list = await _transactionService.GetCategoriess();
+            return Ok(list);
+        }
+
+
+        //AUTO-CATEGORIZATION ***********************************************************************************************************************************
+        [HttpPost("transaction/auto-categorize")]
+        public async Task<IActionResult> AutoCategorise() {
+            List<Rule> listOfRules = new List<Rule>();
+
+            using (var sr = new StreamReader("rules.txt")) {
+
+                while (sr.EndOfStream == false) {
+                    var content = sr.ReadLine();
+                    var partsOfRule = content.Split(',').ToList();
+
+                    if (RowHasData(partsOfRule)) {
+
+                        string ruleNumber = partsOfRule[0];
+                        string title = partsOfRule[1];
+                        string catcode = partsOfRule[2];
+                        string predicate = partsOfRule[3];
+
+                        Rule r = new Rule() {
+                            RuleNumber = ruleNumber,
+                            Title = title,
+                            Catcode = catcode,
+                            Predicate = predicate,
+                        };
+
+                        listOfRules.Add(r);
+                    }
+                }
+            }
+
+            await _transactionService.AutoCategorize(listOfRules);
+            return Ok();
+        }
     }
 }
